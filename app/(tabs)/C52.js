@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,101 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Header } from './header';
 import { Footer } from './footer';
+import getCourseData from '../../BackendProxy/courseProxy/getCourseData'; // Import the new API function
+import getCourses from '../../BackendProxy/courseProxy/getCourses'; // Import the new API function
 
-const C52Screen = ({ navigation }) => {
+const C52Screen = () => {
+  const router = useRouter();
+  const [courseData, setCourseData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [openSections, setOpenSections] = useState({});
+
+  const userId = 'authUser._id'; // Replace this with the actual userId from context or state
+
+  const fetchCourseData = async () => {
+    setLoading(true);
+    try {
+      // Fetch all courses for the user
+      const courses = await getCourses();
+      setCourseData(courses);
+    } catch (err) {
+      setError('Failed to fetch course data');
+      console.error('API Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCourseDetails = async (courseId) => {
+    try {
+      // Fetch specific course data for a particular course
+      const courseDetails = await getCourseData(courseId);
+      console.log('Course Details:', courseDetails);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to fetch course details');
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourseData();
+  }, []);
+
+  const toggleSection = (index) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#5FD2AF" />
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={{ color: 'red', textAlign: 'center', marginTop: 20 }}>
+          {error}
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchCourseData}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  const staticCourses = [
+    {
+      id: '1',
+      title: 'Course 1',
+      description: 'This is a description for Course 1',
+    },
+    {
+      id: '2',
+      title: 'Course 2',
+      description: 'This is a description for Course 2',
+    },
+    {
+      id: '3',
+      title: 'Course 3',
+      description: 'This is a description for Course 3',
+    },
+  ];
+
+  const coursesToDisplay = courseData.length > 0 ? courseData : staticCourses;
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -21,27 +111,58 @@ const C52Screen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* Categories */}
         <View style={styles.categoriesContainer}>
-          <TouchableOpacity style={styles.categoryButton}>
+          <TouchableOpacity
+            style={styles.categoryButton}
+            onPress={() => router.push('/C51')} // Navigate to C51
+          >
             <Text style={styles.categoryText}>Read</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
+          <TouchableOpacity
+            style={styles.categoryButton}
+            onPress={() => router.push('/C52')} // Stay on C52
+          >
             <Text style={styles.categoryText}>Watch</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
+          <TouchableOpacity
+            style={styles.categoryButton}
+            onPress={() => router.push('/C53')} // Navigate to C53
+          >
             <Text style={styles.categoryText}>Listen</Text>
           </TouchableOpacity>
         </View>
 
         {/* Left-Aligned Progress Bar */}
         <View style={styles.progressContainer}>
+          <View style={styles.inactiveProgress}></View>
           <View style={styles.activeProgress}></View>
-          <View style={styles.inactiveProgress}></View>
-          <View style={styles.inactiveProgress}></View>
           <View style={styles.inactiveProgress}></View>
         </View>
 
         {/* Main Content */}
         <View style={styles.mainContent}>
+          {coursesToDisplay.map((course, index) => (
+            <View key={index} style={styles.courseItem}>
+              <TouchableOpacity onPress={() => toggleSection(index)}>
+                <Text style={styles.sectionTitle}>{course.title}</Text>
+              </TouchableOpacity>
+              {openSections[index] && (
+                <View>
+                  <Text style={styles.sectionDescription}>
+                    {course.description}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.detailsButton}
+                    onPress={() => fetchCourseDetails(course.id)}
+                  >
+                    <Text style={styles.detailsButtonText}>
+                      View Course Details
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          ))}
+
           {/* Lesson Image with Play Button */}
           <View style={styles.lessonImageContainer}>
             <Image
@@ -79,7 +200,10 @@ const C52Screen = ({ navigation }) => {
           </View>
 
           {/* Next Button */}
-          <TouchableOpacity style={styles.nextButton}>
+          <TouchableOpacity
+            style={styles.nextButton}
+            onPress={() => router.push('/C53')}
+          >
             <Text style={styles.nextButtonText}>NEXT</Text>
           </TouchableOpacity>
         </View>
@@ -98,11 +222,12 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     flexDirection: 'row',
     paddingVertical: 10,
-    paddingLeft: 16, // Align categories to the left
+    paddingLeft: 16,
   },
   categoryButton: {
-    padding: 10,
-    marginHorizontal: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 10,
     borderColor: '#20b19b',
     borderWidth: 1,
     borderRadius: 20,
@@ -114,7 +239,7 @@ const styles = StyleSheet.create({
   progressContainer: {
     flexDirection: 'row',
     paddingVertical: 10,
-    paddingLeft: 16, // Align progress bar to the left
+    paddingLeft: 16,
   },
   activeProgress: {
     width: 40,
@@ -174,38 +299,47 @@ const styles = StyleSheet.create({
   lessonItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e0f7f4',
-    borderRadius: 5,
-    padding: 10,
-    marginVertical: 5,
+    marginBottom: 10,
   },
   lessonThumbnail: {
     width: 50,
     height: 50,
-    borderRadius: 5,
-    marginRight: 10,
+    borderRadius: 10,
   },
   lessonTextContainer: {
-    flex: 1,
+    marginLeft: 10,
   },
   lessonItemTitle: {
-    color: '#20b19b',
     fontWeight: '600',
+    fontSize: 16,
   },
   lessonItemTime: {
-    color: '#666',
-    fontSize: 12,
+    fontSize: 14,
+    color: '#888',
   },
   nextButton: {
-    backgroundColor: '#20b19b',
-    borderRadius: 5,
+    backgroundColor: '#5FD2AF',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    padding: 15,
-    marginVertical: 20,
+    justifyContent: 'center',
+    marginTop: 20,
   },
   nextButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  retryButton: {
+    backgroundColor: '#20b19b',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  retryButtonText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
 });

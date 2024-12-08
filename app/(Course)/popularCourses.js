@@ -58,58 +58,88 @@ const popularCourses = () => {
     <SafeAreaView style={styles.container}>
       <Header />
       <ScrollView style={styles.scrollView}>
-        
         <View style={styles.container_shadow}>
           <LinearGradient
             colors={['#68D391', '#C6F6D5']} // Adjust these colors based on the gradient you need
-            style={styles.gradient} >
+            style={styles.gradient}
+          >
             <View style={styles.searchcontainer}>
-              <Ionicons name="search" size={25} color="#68D391" style={styles.icon} />
-              <TextInput
-                style={styles.searchinput}
+              <Ionicons
+                name="search"
+                size={25}
+                color="#68D391"
+                style={styles.icon}
               />
+              <TextInput style={styles.searchinput} />
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.scrollContainer}
+            >
               <View style={styles.coursePalette}>
-              {courses &&
-                courses.map((course, index) => (
-                  <View style={[styles.paletteBox]}>
-                    <TouchableOpacity
-                      style={styles.iconWrapper}
-                      onPress={() => navigateToScreenwithParams('/lessonContent?id=',course._id)}// Change 'ProfileScreen' to your actual screen name
-                    >
-                      <Image
-                        source={require('../../assets/images/Maths.jpg')} // Assuming 'imageUrl' is a property in your course object
-                        style={styles.coueseImage} // Define a new style for the image
-                      />
-                    </TouchableOpacity>
-                    <Text style={styles.paletteText}>{course.title}</Text>
-                  </View>
-                ))}
+                {courses &&
+                  courses.map((course, index) => (
+                    <View style={[styles.paletteBox]}>
+                      <TouchableOpacity
+                        style={styles.iconWrapper}
+                        onPress={() =>
+                          navigateToScreenwithParams(
+                            '/lessonContent?id=',
+                            course._id
+                          )
+                        } // Change 'ProfileScreen' to your actual screen name
+                      >
+                        <Image
+                          source={
+                            course.imageUrl ||
+                            'https://contenthub-static.grammarly.com/blog/wp-content/uploads/2023/07/Subject-Complement.png'
+                          } // Assuming 'imageUrl' is a property in your course object
+                          style={styles.coueseImage} // Define a new style for the image
+                        />
+                      </TouchableOpacity>
+                      <Text style={styles.paletteText}>{course.title}</Text>
+                    </View>
+                  ))}
               </View>
             </ScrollView>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.scrollContainer}
+            >
               <View style={styles.coursePalette}>
-              {courses &&
-                courses.map((course, index) => (
-                  <View style={[styles.paletteBox]}>
-                    <TouchableOpacity
-                      style={styles.iconWrapper}
-                      onPress={() => navigateToScreenwithParams('/lessonContent?id=',course._id)}// Change 'ProfileScreen' to your actual screen name
-                    >
-                      <Image
-                        source={require('../../assets/images/Maths.jpg')} // Assuming 'imageUrl' is a property in your course object
-                        style={styles.coueseImage} // Define a new style for the image
-                      />
-                    </TouchableOpacity>
-                    <Text style={styles.paletteText}>{course.title}</Text>
-                  </View>
-                ))}
+                {courses &&
+                  courses.map((course, index) => (
+                    <View style={[styles.paletteBox]}>
+                      <TouchableOpacity
+                        style={styles.iconWrapper}
+                        onPress={() =>
+                          navigateToScreenwithParams(
+                            '/lessonContent?id=',
+                            course._id
+                          )
+                        } // Change 'ProfileScreen' to your actual screen name
+                      >
+                        <Image
+                          source={
+                            course.imageUrl ||
+                            'https://contenthub-static.grammarly.com/blog/wp-content/uploads/2023/07/Subject-Complement.png'
+                          } // Assuming 'imageUrl' is a property in your course object
+                          style={styles.coueseImage} // Define a new style for the image
+                        />
+                      </TouchableOpacity>
+                      <Text style={styles.paletteText}>{course.title}</Text>
+                    </View>
+                  ))}
               </View>
             </ScrollView>
           </LinearGradient>
         </View>
-        <ScrollView showsVerticalScrollIndicator={true} style={styles.scrollView}>
+        <ScrollView
+          showsVerticalScrollIndicator={true}
+          style={styles.scrollView}
+        >
           <View>
             {courses.map((course, index) => (
               <CourseCard
@@ -118,6 +148,10 @@ const popularCourses = () => {
                 author={course.creator.username}
                 subject={course.categories[0]} // Assuming you want to display the first tag
                 ageRange={course.age} // Replace this with actual value if available
+                imageUrl={
+                  course.imageUrl ||
+                  'https://contenthub-static.grammarly.com/blog/wp-content/uploads/2023/07/Subject-Complement.png'
+                }
                 id={course._id}
               />
             ))}

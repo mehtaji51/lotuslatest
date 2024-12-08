@@ -72,7 +72,6 @@ export default function TabLayout() {
               color={color}
             />
           ),
-       
         }}
       />
       <Tabs.Screen
@@ -127,6 +126,18 @@ export default function TabLayout() {
         name="notification" // Should correspond to the "userdetails" screen file
         options={{
           title: 'notification',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? 'person' : 'person-outline'}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="C51" // Should correspond to the "userdetails" screen file
+        options={{
+          title: 'C51',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? 'person' : 'person-outline'}

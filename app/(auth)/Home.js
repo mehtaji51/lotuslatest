@@ -77,7 +77,10 @@ const CourseCard = ({ course }) => (
       {course.subject}
     </Text>
     <Image
-      source={require('../../assets/images/Maths.jpg')}
+      source={
+        course.imageUrl ||
+        'https://contenthub-static.grammarly.com/blog/wp-content/uploads/2023/07/Subject-Complement.png'
+      }
       style={styles.courseImage}
     />
     <View style={styles.courseInfo}>

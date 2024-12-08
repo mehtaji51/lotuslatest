@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,24 +6,126 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Header } from './header';
 import { Footer } from './footer';
+import getCourseData from '../../BackendProxy/courseProxy/getCourseData'; // Import the new API function
+import getCourses from '../../BackendProxy/courseProxy/getCourses'; // Import the new API function
 
-const C53Screen = ({ navigation }) => {
+const C53Screen = () => {
+  const router = useRouter();
+
+  // State to manage courses and loading
+  const [courseData, setCourseData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [openSections, setOpenSections] = useState({});
+
+  // Function to fetch all courses
+  const fetchCourseData = async () => {
+    setLoading(true);
+    try {
+      // Fetch all courses using getCourses API
+      const courses = await getCourses();
+      setCourseData(courses); // Update state with fetched courses
+    } catch (err) {
+      setError('Failed to fetch course data');
+      console.error('API Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to fetch details of a specific course
+  const fetchCourseDetails = async (courseId) => {
+    try {
+      // Fetch specific course data using getCourseData API
+      const courseDetails = await getCourseData(courseId);
+      console.log('Course Details:', courseDetails); // Log course details for debugging
+    } catch (err) {
+      Alert.alert('Error', 'Failed to fetch course details');
+      console.error(err);
+    }
+  };
+
+  // Fetch courses data when component mounts
+  useEffect(() => {
+    fetchCourseData();
+  }, []);
+
+  // Toggle open sections for subcategories
+  const toggleSection = (index) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  // Show loading indicator while fetching data
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#5FD2AF" />
+      </SafeAreaView>
+    );
+  }
+
+  // Show error message if API call fails
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={{ color: 'red', textAlign: 'center', marginTop: 20 }}>
+          {error}
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchCourseData}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  // Use static courses as fallback if no data from API
+  const staticCourses = [
+    {
+      id: '1',
+      title: 'Course 1',
+      description: 'This is a description for Course 1',
+    },
+    {
+      id: '2',
+      title: 'Course 2',
+      description: 'This is a description for Course 2',
+    },
+    {
+      id: '3',
+      title: 'Course 3',
+      description: 'This is a description for Course 3',
+    },
+  ];
+
+  // Display either fetched course data or static data if no courses available
+  const coursesToDisplay = courseData.length > 0 ? courseData : staticCourses;
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <Header />
 
-      {/* Scrollable Content */}
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* Categories */}
+        {/* Category Buttons */}
         <View style={styles.categoriesContainer}>
-          <TouchableOpacity style={styles.categoryButton}>
+          <TouchableOpacity
+            style={styles.categoryButton}
+            onPress={() => router.push('/C51')}
+          >
             <Text style={styles.categoryText}>Read</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
+          <TouchableOpacity
+            style={styles.categoryButton}
+            onPress={() => router.push('/C52')}
+          >
             <Text style={styles.categoryText}>Watch</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.categoryButton}>
@@ -31,39 +133,37 @@ const C53Screen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Left-Aligned Progress Bar */}
+        {/* Progress Bar */}
         <View style={styles.progressContainer}>
+          <View style={styles.inactiveProgress}></View>
+          <View style={styles.inactiveProgress}></View>
           <View style={styles.activeProgress}></View>
-          <View style={styles.inactiveProgress}></View>
-          <View style={styles.inactiveProgress}></View>
-          <View style={styles.inactiveProgress}></View>
         </View>
 
         {/* Main Content */}
         <View style={styles.mainContent}>
-          {/* Section Title and Description */}
+          {/* Section Title */}
           <Text style={styles.sectionTitle}>
             INTRODUCTIONS AND INSPIRATIONS
           </Text>
+
+          {/* Video Container */}
           <View style={styles.videoContainer}>
             <TouchableOpacity style={styles.playButton}>
               <Text style={styles.playButtonText}>▶</Text>
             </TouchableOpacity>
             <View style={styles.progressInsideVideo}></View>
           </View>
+
+          {/* Section Description */}
           <Text style={styles.sectionDescription}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua...
           </Text>
 
-          {/* Subcategory List */}
+          {/* Courses List */}
           <View style={styles.subcategoryList}>
-            {[
-              'Characterization and Voice',
-              'Scenes and Senses',
-              'Form and Structure',
-              'Dialogue',
-            ].map((subcategory, index) => (
+            {coursesToDisplay.map((course, index) => (
               <View key={index} style={styles.subcategoryItem}>
                 <View style={styles.subcategoryIconContainer}>
                   <View style={styles.circle}>
@@ -71,8 +171,11 @@ const C53Screen = ({ navigation }) => {
                   </View>
                   {index < 3 && <View style={styles.line} />}
                 </View>
-                <TouchableOpacity style={styles.subcategoryTextContainer}>
-                  <Text style={styles.subcategoryText}>{subcategory}</Text>
+                <TouchableOpacity
+                  style={styles.subcategoryTextContainer}
+                  onPress={() => fetchCourseDetails(course.id)}
+                >
+                  <Text style={styles.subcategoryText}>{course.title}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -206,24 +309,33 @@ const styles = StyleSheet.create({
   },
   subcategoryTextContainer: {
     flex: 1,
-    paddingVertical: 8,
   },
   subcategoryText: {
     fontSize: 14,
-    color: '#20b19b',
     fontWeight: '600',
+    color: '#20b19b',
   },
   nextButton: {
     backgroundColor: '#20b19b',
-    borderRadius: 5,
+    paddingVertical: 15,
+    borderRadius: 20,
     alignItems: 'center',
-    padding: 15,
     marginVertical: 20,
   },
   nextButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
+    color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+  retryButton: {
+    paddingVertical: 10,
+    backgroundColor: '#ff6666',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  retryButtonText: {
+    color: '#ffffff',
   },
 });
 

@@ -84,6 +84,7 @@ const ProfileHome = () => {
                 author={course.creator.username}
                 subject={course.categories[0]} // Assuming you want to display the first tag
                 ageRange={course.age} // Replace this with actual value if available
+                imageUri={course.imageUrl}
                 id={course._id}
               />
             ))
@@ -113,7 +114,10 @@ const ProfileHome = () => {
                     //onPress={() => navigateToScreen('/lessonContent')}// Change 'ProfileScreen' to your actual screen name
                   >
                     <Image
-                      source={require('../../assets/images/Maths.jpg')} // Assuming 'imageUrl' is a property in your course object
+                      source={
+                        course.imageUrl ||
+                        'https://contenthub-static.grammarly.com/blog/wp-content/uploads/2023/07/Subject-Complement.png'
+                      } // Assuming 'imageUrl' is a property in your course object
                       style={styles.commonBox} // Define a new style for the image
                     />
                   </TouchableOpacity>

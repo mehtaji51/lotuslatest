@@ -11,11 +11,15 @@ const CourseCard = ({ title, author, subject, ageRange, id , imageUri }) => {
   return (
     <View style={styles.cardContainer}>
       {/* Background Image */}
-      <TouchableOpacity style={styles.iconWrapper}
-        onPress={() => navigateToScreenwithParams('/lessonContent?id=',id)}
-        >
+      <TouchableOpacity
+        style={styles.iconWrapper}
+        onPress={() => navigateToScreenwithParams('/lessonContent?id=', id)}
+      >
         <ImageBackground
-          source={require('../../assets/images/Maths.jpg')}
+          source={
+            imageUri ||
+            'https://contenthub-static.grammarly.com/blog/wp-content/uploads/2023/07/Subject-Complement.png'
+          }
           style={styles.imageBackground}
           imageStyle={styles.imageStyle}
         ></ImageBackground>
